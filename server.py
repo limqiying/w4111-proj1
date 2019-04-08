@@ -220,14 +220,23 @@ def add():
   # return redirect('/')
 
 
-@app.route('/statistics')
+@app.route('/statistics', methods=['POST', 'GET'])
 def statistics():
-  money_spent_sql = "select * from (" + \
-    "select x.name, sum(cast(x.price as integer)) as total_spending from (" + \
-    "select c.name,cs.price from customer as c, buys as b, \"order\" as o, consists_of as cs where cast(c.cid as text) = b.cid " + \
-    "and b.oid = o.oid and o.oid = cs.oid" + \
-    ") as x group by name" + \
-    ") as z order by z.total_spending desc"
+
+  min_cust_sale = 0
+  if 'min_cust_sale' in request.form:
+    min_cust_sale = request.form["min_cust_sale"]
+
+  print "min_cust_sale = ", min_cust_sale
+
+  money_spent_sql = """
+    select * from (
+    select x.name, sum(cast(x.price as integer)) as total_spending from (
+    select c.name,cs.price from customer as c, buys as b, "order" as o, consists_of as cs where cast(c.cid as text) = b.cid 
+    and b.oid = o.oid and o.oid = cs.oid
+    ) as x group by name
+    ) as z order by z.total_spending desc
+    """
 
   cursor = g.conn.execute(money_spent_sql)
   money_spent_cols = cursor.keys()

@@ -12,6 +12,18 @@ table, th, td {
 
 
 <body>
+  <h2>Select Minimum Sell Amount</h2>
+  <form method="POST" action="/statistics">
+    <select name="min_cust_sale">
+        <option value="0">All</option>
+        <option value="100">100</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+        <option value="1500">1500</option>
+    </select>
+    <input type="submit" value="View Detail"></p>
+  </form>
+
 
   <h1>Money Spent By Each Customer : </h1>
   <table>
