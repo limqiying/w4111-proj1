@@ -111,13 +111,22 @@ def index():
   # DEBUG: this is debugging code to see what request looks like
   print request.args
 
-  inventory_list_sql = "SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating," + \
-    " COUNT(R.rating) as num_ratings" + \
-    " FROM inventory I, review R" + \
-    " WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0" + \
-    " GROUP BY I.sku, I.name, I.description, I.quantity, I.price"
+  # inventory_list_sql = "SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating," + \
+  #   " COUNT(R.rating) as num_ratings" + \
+  #   " FROM inventory I, review R" + \
+  #   " WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0" + \
+  #   " GROUP BY I.sku, I.name, I.description, I.quantity, I.price"
 
-  print inventory_list_sql
+
+  inventory_list_sql = """
+    SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
+    COUNT(R.rating) as num_ratings
+    FROM inventory I LEFT JOIN review R on I.sku = R.sku
+    WHERE CAST(I.quantity AS DEC)> 0
+    GROUP BY I.sku, I.name, I.description, I.quantity, I.price
+    """
+
+  # print inventory_list_sql
 
   # get the inventory data
   cursor = g.conn.execute(inventory_list_sql)
