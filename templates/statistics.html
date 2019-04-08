@@ -13,12 +13,7 @@ table, th, td {
 
 <body>
 
-
-  <a href="/statistics">Visit Statistics</a>
-
-
-
-  <!-- <h1>Money Spent By Each Customer : </h1>
+  <h1>Money Spent By Each Customer : </h1>
   <table>
     {% for column in money_spent_cols %}
       <th>{{column}}</th>
@@ -68,36 +63,8 @@ table, th, td {
     {% endfor %}
   </table>
 
-  <p> -->
-
-  <h1>Inventory Details with At least one item in stock</h1>
-  <table>
-    {% for column in inventory_cols %}
-      <th>{{column}}</th>
-    {% endfor %}
-
-    {% for row in inventory_data %}
-    <tr>
-      {% for cell in row %}
-        <td>{{cell}}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-
   <p>
 
-  <div>
-  <h2>Select One of the Items to view its detail :</h2>
-  <form method="POST" action="/item">
-    <select name="sku">
-      {% for row in inventory_data %}
-        <option value="{{row[0]}}">{{row[1]}}</option>
-      {% endfor %}
-    </select>
-    <input type="submit" value="View Detail"></p>
-  </form>
-  </div>
 
 
 
