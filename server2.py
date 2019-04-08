@@ -1,4 +1,3 @@
-import copy
 #!/usr/bin/env python2.7
 
 """
@@ -111,73 +110,43 @@ def index():
   # DEBUG: this is debugging code to see what request looks like
   print request.args
 
-  inventory_list_sql = "SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating," + \
-    " COUNT(R.rating) as num_ratings" + \
-    " FROM inventory I, review R" + \
-    " WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0" + \
-    " GROUP BY I.sku, I.name, I.description, I.quantity, I.price"
 
-  print inventory_list_sql
-
-  # get the inventory data
-  cursor = g.conn.execute(inventory_list_sql)
-  inventory_cols = cursor.keys()
-  inventory_data = list(cursor)
+  #
+  # example of a database query
+  #
+  cursor = g.conn.execute("SELECT name FROM customer")
+  names = []
+  for result in cursor:
+    names.append(result['name'])  # can also be accessed using result[0]
   cursor.close()
 
-
-  money_spent_sql = "select * from (" + \
-    "select x.name, sum(cast(x.price as integer)) as total_spending from (" + \
-    "select c.name,cs.price from customer as c, buys as b, \"order\" as o, consists_of as cs where cast(c.cid as text) = b.cid " + \
-    "and b.oid = o.oid and o.oid = cs.oid" + \
-    ") as x group by name" + \
-    ") as z order by z.total_spending desc"
-
-  cursor = g.conn.execute(money_spent_sql)
-  money_spent_cols = cursor.keys()
-  money_spent_data = list(cursor)
-  cursor.close()
-
-
-  sku_detail_sql = "select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (" + \
-    "select a.sku, sum(cast(a.price as integer)) as total_sale from (" + \
-    "select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku" + \
-    ") as a group by sku" + \
-    ") x ON w.sku = x.sku " + \
-    "LEFT JOIN (" + \
-    "select z.sku, avg(z.rating) as average_rating from (" + \
-    "select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku" + \
-    ") as z group by sku" + \
-    ") as y ON w.sku = y.sku order by w.sku asc"
-
-  cursor = g.conn.execute(sku_detail_sql)
-  sku_detail_cols = cursor.keys()
-  sku_detail_data = list(cursor)
-  cursor.close()
-
-
-  shipping_cost_sql = "select * from (" + \
-    "select d.zip_code, avg(d.shipping_cost) as average_cost from (" + \
-    "select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, \"order\" as o, ships_via as sv, shipping_detail as sd " + \
-    "where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)" + \
-    ") as d group by zip_code" + \
-    ") as c order by average_cost desc"
-
-  cursor = g.conn.execute(shipping_cost_sql)
-  shipping_cost_cols = cursor.keys()
-  shipping_cost_data = list(cursor)
-  cursor.close()
-
-  context = dict(
-    inventory_cols = inventory_cols,
-    inventory_data = inventory_data,
-    money_spent_cols = money_spent_cols,
-    money_spent_data = money_spent_data,
-    sku_detail_cols = sku_detail_cols,
-    sku_detail_data = sku_detail_data,
-    shipping_cost_cols = shipping_cost_cols,
-    shipping_cost_data = shipping_cost_data
-  )
+  #
+  # Flask uses Jinja templates, which is an extension to HTML where you can
+  # pass data to a template and dynamically generate HTML based on the data
+  # (you can think of it as simple PHP)
+  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
+  #
+  # You can see an example template in templates/index.html
+  #
+  # context are the variables that are passed to the template.
+  # for example, "data" key in the context variable defined below will be 
+  # accessible as a variable in index.html:
+  #
+  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
+  #     <div>{{data}}</div>
+  #     
+  #     # creates a <div> tag for each element in data
+  #     # will print: 
+  #     #
+  #     #   <div>grace hopper</div>
+  #     #   <div>alan turing</div>
+  #     #   <div>ada lovelace</div>
+  #     #
+  #     {% for n in data %}
+  #     <div>{{n}}</div>
+  #     {% endfor %}
+  #
+  context = dict(data = names)
 
 
   #
@@ -198,58 +167,15 @@ def index():
 def another():
   return render_template("another.html")
 
-
-
 # Example of adding new data to the database
-@app.route('/view_item_detail', methods=['POST'])
-def view_item_detail():
-  print request.form
-
-  sku = request.form['sku']
-
-  cursor = g.conn.execute("SELECT email FROM customer where name = '%s'" % (name))
-
-  # g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-
-  # cursor = g.conn.execute("SELECT name FROM customer")
-  names = []
-  for result in cursor:
-    names.append(result['email'])  # can also be accessed using result[0]
-  cursor.close()
-
-  context = dict(data = names)
-  return render_template("index.html", **context)
-  # return redirect('/')
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  print request.form
-
-  name = request.form['name']
-
-  cursor = g.conn.execute("SELECT email FROM customer where name = '%s'" % (name))
-
-  # g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-
-  # cursor = g.conn.execute("SELECT name FROM customer")
-  names = []
-  for result in cursor:
-    names.append(result['email'])  # can also be accessed using result[0]
-  cursor.close()
-
-  context = dict(data = names)
-  return render_template("index.html", **context)
-  # return redirect('/')
-
-
-@app.route('/item', methods=['POST'])
+@app.route('/item')
 def item():
-  # print request.form
+  print request.form
   
-  sku = request.form['sku']
-  query1 = "SELECT I.name, I.description, I.quantity, I.price FROM inventory I WHERE I.sku = '%s'" % (sku)
-  query2 = "SELECT R.title, R.r_text, R.rating, R.date_posted, C.name FROM inventory I, review R, reviews RS, customer C WHERE I.sku = R.sku and RS.rid = R.rid and RS.cid = C.cid and I.sku = '%s'" % (sku)
+  sku = '1'
+  query1 = "SELECT I.name, I.description, I.quantity, I.price FROM inventory I WHERE I.sku = '%s'" %(sku)
+  query2 = "SELECT R.title, R.r_text, R.rating, R.date_posted, C.name FROM inventory I, review R, reviews RS, customer C WHERE I.sku = R.sku and RS.rid = R.rid and RS.cid = C.cid and I.sku = '1'"
+
   cursor = g.conn.execute(query1)
 
   result = cursor.fetchone()
@@ -266,6 +192,29 @@ def item():
   context = dict(data = data, reviews=reviews)
   return render_template("another.html", **context)
   # return redirect('/')
+
+
+# Example of adding new data to the database
+@app.route('/add', methods=['POST'])
+def add():
+  print request.form
+  
+  name = request.form['name']
+
+  cursor = g.conn.execute("SELECT email FROM customer where name = '%s'" % (name))
+
+  # g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
+
+  # cursor = g.conn.execute("SELECT name FROM customer")
+  names = []
+  for result in cursor:
+    names.append(result['email'])  # can also be accessed using result[0]
+  cursor.close()
+
+  context = dict(data = names)
+  return render_template("item.html", **context)
+  # return redirect('/')
+
 
 @app.route('/login')
 def login():

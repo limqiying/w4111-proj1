@@ -1,1 +1,46 @@
-hello, I am another file!
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <h1>{{data['name']}}</h1>
+  <!-- <div>{{data}}</div> -->
+
+  <div>
+    {% for n in data %}
+    <div> <b>{{n}}:</b> {{data[n]}}</div>
+    {% endfor %}
+  </div>
+
+  <div> 
+  	<h3> Reviews: </h3>
+  	<!-- <div> -->
+  		<ol>
+  		{% for r in reviews %}
+  		<li>
+  			<div>
+  				<h5>{{r['title']}} {% for n in range(r['rating']) %} &#9733 {% endfor %} </h5> 
+  			</div>
+  			<div>
+  				<b>review: </b>{{r['r_text']}}
+  			</div>
+  			<div>
+  				<b>date posted: </b>{{r['date_posted']}}
+  			</div>
+  			<div>
+  				<b>by: </b>{{r['name']}}
+  			</div>
+  		</li>
+  		<br>
+  		{% endfor %}
+  		</ol>
+  </div>
+</body>
+
+
+</html>
