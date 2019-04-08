@@ -2,7 +2,7 @@
 # if there is stock in the datbase
 SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
 COUNT(R.rating) as num_ratings
-FROM inventory I, review R
+FROM inventory I LEFT OUTER JOIN JOIN review R
 WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0
 GROUP BY I.sku, I.name, I.description, I.quantity, I.price
 
