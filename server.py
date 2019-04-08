@@ -53,7 +53,43 @@ engine = create_engine(DATABASEURI)
 #   name text
 # );""")
 # engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+@app.route('/rating_filter', methods=['POST'])
+def rating_filter():
+  
+  rating = int(request.form['rating'])
+  if rating > 0:
+    inventory_list_sql = """
+      SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
+      COUNT(R.rating) as num_ratings
+      FROM inventory I LEFT JOIN review R on I.sku = R.sku
+      WHERE CAST(I.quantity AS DEC)> 0 
+      GROUP BY I.sku, I.name, I.description, I.quantity, I.price
+      HAVING AVG(R.rating) >= %d
+      """ % (rating)
+  else:
+      inventory_list_sql = """
+      SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
+      COUNT(R.rating) as num_ratings
+      FROM inventory I LEFT JOIN review R on I.sku = R.sku
+      WHERE CAST(I.quantity AS DEC)> 0 
+      GROUP BY I.sku, I.name, I.description, I.quantity, I.price"""
 
+  # get the inventory data
+  cursor = g.conn.execute(inventory_list_sql)
+  inventory_cols = cursor.keys()
+  inventory_data = list(cursor)
+  cursor.close()
+
+  context = dict(
+    inventory_cols = inventory_cols,
+    inventory_data = inventory_data,
+  )
+
+  #
+  # render_template looks in the templates/ folder for files.
+  # for example, the below file reads template/index.html
+  #
+  return render_template("index.html", **context)
 
 @app.before_request
 def before_request():
@@ -98,25 +134,6 @@ def teardown_request(exception):
 #
 @app.route('/')
 def index():
-  """
-  request is a special object that Flask provides to access web request information:
-
-  request.method:   "GET" or "POST"
-  request.form:     if the browser submitted a form, this contains the data in the form
-  request.args:     dictionary of URL arguments, e.g., {a:1, b:2} for http://localhost?a=1&b=2
-
-  See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
-  """
-
-  # DEBUG: this is debugging code to see what request looks like
-  print request.args
-
-  # inventory_list_sql = "SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating," + \
-  #   " COUNT(R.rating) as num_ratings" + \
-  #   " FROM inventory I, review R" + \
-  #   " WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0" + \
-  #   " GROUP BY I.sku, I.name, I.description, I.quantity, I.price"
-
 
   inventory_list_sql = """
     SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
@@ -134,59 +151,6 @@ def index():
   inventory_data = list(cursor)
   cursor.close()
 
-
-  # money_spent_sql = "select * from (" + \
-  #   "select x.name, sum(cast(x.price as integer)) as total_spending from (" + \
-  #   "select c.name,cs.price from customer as c, buys as b, \"order\" as o, consists_of as cs where cast(c.cid as text) = b.cid " + \
-  #   "and b.oid = o.oid and o.oid = cs.oid" + \
-  #   ") as x group by name" + \
-  #   ") as z order by z.total_spending desc"
-
-  # cursor = g.conn.execute(money_spent_sql)
-  # money_spent_cols = cursor.keys()
-  # money_spent_data = list(cursor)
-  # cursor.close()
-
-
-  # sku_detail_sql = "select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (" + \
-  #   "select a.sku, sum(cast(a.price as integer)) as total_sale from (" + \
-  #   "select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku" + \
-  #   ") as a group by sku" + \
-  #   ") x ON w.sku = x.sku " + \
-  #   "LEFT JOIN (" + \
-  #   "select z.sku, avg(z.rating) as average_rating from (" + \
-  #   "select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku" + \
-  #   ") as z group by sku" + \
-  #   ") as y ON w.sku = y.sku order by w.sku asc"
-
-  # cursor = g.conn.execute(sku_detail_sql)
-  # sku_detail_cols = cursor.keys()
-  # sku_detail_data = list(cursor)
-  # cursor.close()
-
-
-  # shipping_cost_sql = "select * from (" + \
-  #   "select d.zip_code, avg(d.shipping_cost) as average_cost from (" + \
-  #   "select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, \"order\" as o, ships_via as sv, shipping_detail as sd " + \
-  #   "where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)" + \
-  #   ") as d group by zip_code" + \
-  #   ") as c order by average_cost desc"
-
-  # cursor = g.conn.execute(shipping_cost_sql)
-  # shipping_cost_cols = cursor.keys()
-  # shipping_cost_data = list(cursor)
-  # cursor.close()
-
-  # context = dict(
-  #   inventory_cols = inventory_cols,
-  #   inventory_data = inventory_data,
-  #   money_spent_cols = money_spent_cols,
-  #   money_spent_data = money_spent_data,
-  #   sku_detail_cols = sku_detail_cols,
-  #   sku_detail_data = sku_detail_data,
-  #   shipping_cost_cols = shipping_cost_cols,
-  #   shipping_cost_data = shipping_cost_data
-  # )
   context = dict(
     inventory_cols = inventory_cols,
     inventory_data = inventory_data,

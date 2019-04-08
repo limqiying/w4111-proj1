@@ -16,60 +16,6 @@ table, th, td {
 
   <a href="/statistics">Visit Statistics</a>
 
-
-
-  <!-- <h1>Money Spent By Each Customer : </h1>
-  <table>
-    {% for column in money_spent_cols %}
-      <th>{{column}}</th>
-    {% endfor %}
-
-    {% for row in money_spent_data %}
-    <tr>
-      {% for cell in row %}
-        <td>{{cell}}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-
-  <p>
-
-  <h1>SKU Sell Statistics: </h1>
-  <table>
-    {% for column in sku_detail_cols %}
-      <th>{{column}}</th>
-    {% endfor %}
-
-    {% for row in sku_detail_data %}
-    <tr>
-      {% for cell in row %}
-        <td>{{cell}}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-
-  <p>
-
-
-  <h1>Shipping Cost Statistics: </h1>
-  <table>
-    {% for column in shipping_cost_cols %}
-      <th>{{column}}</th>
-    {% endfor %}
-
-    {% for row in shipping_cost_data %}
-    <tr>
-      {% for cell in row %}
-        <td>{{cell}}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-
-  <p> -->
-
   <h1>Inventory Details with At least one item in stock</h1>
   <table>
     {% for column in inventory_cols %}
@@ -96,6 +42,19 @@ table, th, td {
       {% endfor %}
     </select>
     <input type="submit" value="View Detail"></p>
+  </form>
+</div>
+
+<div>
+  <h2>Filter by rating:</h2>
+  <form method="POST" action="/rating_filter">
+    <input type="radio" name="rating" value="5"> &#9733 &#9733 &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="4"> &#9733 &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="3"> &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="2"> &#9733 &#9733 <br>
+<input type="radio" name="rating" value="1"> &#9733<br>
+<input type="radio" name="rating" value="0"> All<br>
+    <input type="submit" value="Filter Rating"></p>
   </form>
   </div>
 
