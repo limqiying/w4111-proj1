@@ -34,7 +34,7 @@ app = Flask(__name__, template_folder=tmpl_dir)
 #
 #     DATABASEURI = "postgresql://biliris:foobar@104.196.18.7/w4111"
 #
-DATABASEURI = "postgresql://user:password@104.196.18.7/w4111"
+DATABASEURI = "postgresql://ss5645:password1234@34.73.21.127/proj1part2"
 
 
 #
@@ -46,11 +46,12 @@ engine = create_engine(DATABASEURI)
 # Example of running queries in your database
 # Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
 #
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+
+# engine.execute("""CREATE TABLE IF NOT EXISTS test (
+#   id serial,
+#   name text
+# );""")
+# engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
 
 @app.before_request
@@ -113,7 +114,7 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT name FROM test")
+  cursor = g.conn.execute("SELECT name FROM customer")
   names = []
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
@@ -170,9 +171,23 @@ def another():
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
+  print request.form
+  
   name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
+
+  cursor = g.conn.execute("SELECT email FROM customer where name = '%s'" % (name))
+
+  # g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
+
+  # cursor = g.conn.execute("SELECT name FROM customer")
+  names = []
+  for result in cursor:
+    names.append(result['email'])  # can also be accessed using result[0]
+  cursor.close()
+
+  context = dict(data = names)
+  return render_template("index.html", **context)
+  # return redirect('/')
 
 
 @app.route('/login')
