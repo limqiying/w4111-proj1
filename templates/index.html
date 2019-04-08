@@ -13,8 +13,23 @@ table, th, td {
 
 <body>
 
-
   <a href="/statistics">Visit Statistics</a>
+  
+  <div>
+  <h2>Filter by rating:</h2>
+  <form method="POST" action="/rating_filter">
+    <input type="radio" name="rating" value="5"> &#9733 &#9733 &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="4"> &#9733 &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="3"> &#9733 &#9733 &#9733<br>
+<input type="radio" name="rating" value="2"> &#9733 &#9733 <br>
+<input type="radio" name="rating" value="1"> &#9733<br>
+<input type="radio" name="rating" value="0"> All<br>
+    <input type="submit" value="Filter Rating"></p>
+  </form>
+  </div>
+
+
+  
 
   <h1>Inventory Details with At least one item in stock</h1>
   <table>
@@ -45,18 +60,7 @@ table, th, td {
   </form>
 </div>
 
-<div>
-  <h2>Filter by rating:</h2>
-  <form method="POST" action="/rating_filter">
-    <input type="radio" name="rating" value="5"> &#9733 &#9733 &#9733 &#9733 &#9733<br>
-<input type="radio" name="rating" value="4"> &#9733 &#9733 &#9733 &#9733<br>
-<input type="radio" name="rating" value="3"> &#9733 &#9733 &#9733<br>
-<input type="radio" name="rating" value="2"> &#9733 &#9733 <br>
-<input type="radio" name="rating" value="1"> &#9733<br>
-<input type="radio" name="rating" value="0"> All<br>
-    <input type="submit" value="Filter Rating"></p>
-  </form>
-  </div>
+
 
 
 
