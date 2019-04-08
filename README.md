@@ -6,5 +6,5 @@ This is a basic front-end web application that will demonstrate some functionali
 
 Database account number : ss5645
 We run this command : psql -U ss5645 -h 34.73.21.127 -d proj1part2
-[//]: <> (Password is : password1234)
+
 
