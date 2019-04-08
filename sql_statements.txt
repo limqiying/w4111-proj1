@@ -1,0 +1,33 @@
+# selects the name, quantity and average rating of all inventory in the database 
+# if there is stock in the datbase
+SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
+COUNT(R.rating) as num_ratings
+FROM inventory I, review R
+WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0
+GROUP BY I.sku, I.name, I.description, I.quantity, I.price
+
+# select name of all inventory in the databse
+# if there is stock in the databse
+SELECT I.sku, I.name
+FROM inventory I
+WHERE CAST(I.quantity AS DEC)> 0
+
+# selects the name, quantity and average rating of all inventory in the database 
+# if there is stock in the datbase
+SELECT I.sku, I.name, I.description, I.quantity, I.price, AVG(R.rating) as average_rating,
+COUNT(R.rating) as num_ratings
+FROM inventory I, review R
+WHERE I.sku = R.sku and CAST(I.quantity AS DEC)> 0
+GROUP BY I.name, I.description, I.quantity, I.price
+HAVING AVG(R.rating) > ${SOMENUMBER}
+
+# select all information about the inventory item 
+# including all the reviews
+SELECT R.title, R.r_text, R.rating, R.date_posted, C.name
+FROM inventory I, review R, reviews RS, customer C
+WHERE I.sku = R.sku and RS.rid = R.rid and RS.cid = C.cid and I.sku = '1'
+
+
+SELECT I.name, SC.quantity 
+FROM Inventory I, shopping_cart SC
+WHERE SC.cid = '1' and I.sku = SC.sku
