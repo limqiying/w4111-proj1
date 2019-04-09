@@ -330,7 +330,8 @@ def statistics():
   sku_detail_data = list(cursor)
   cursor.close()
 
-
+  zip_code_value = None
+  min_shipping_cost = None
   if 'zip_code_value' in request.form:
     zip_code_value = request.form['zip_code_value']
     if zip_code_value == '0':
