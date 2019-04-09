@@ -5,6 +5,8 @@ This is a basic front-end web application that will demonstrate some functionali
 ## Live application Host Location : 
 http://35.194.89.237:8111/
 
+Please Node the / at the end of the url, if its not given flask will take more time to load the page
+
 ## PostgreSQL database account
 
 Database account number : ss5645 <br/>
@@ -30,4 +32,6 @@ The third is Shipping cost analytics. Again we can filter by to zip code and min
 
 ## Interesting Database Operations
 
-We believe that our main page is interesting, as it lists all the available products available that is in stock. That is, inventory that has 0 quantity in stock will not be displayed. Also, mimicks commercial shopping websites where the users are allowed to filter by ratings, for example, to narrow their search. These rating filter inputs are used as a threshold for the average rating for any particular product, and only products that match the search criteria is displayed. Moreover, the user can select particular items to view more details about the item, such as a list of specific reviews. 
+We believe that our main page is interesting, as it lists all the available products available that is in stock. That is, inventory that has 0 quantity in stock will not be displayed. Also, mimicks commercial shopping websites where the users are allowed to filter by ratings, for example, to narrow their search. These rating filter inputs are used as a threshold for the average rating for any particular product, and only products that match the search criteria is displayed. Moreover, the user can select particular items to view more details about the item, such as a list of specific reviews. This is analogus to a Amazon Review page.
+
+The Statistics page is important as it displays crucial informations for sellers marketting and operations team. As finding out most popular items, best selling items, most spending items are crucial for marketting teams. Similarly, the shipping cost analytics is very important for operations and finance team for logisitcs optimization.
