@@ -12,6 +12,8 @@ table, th, td {
 
 
 <body>
+  <h1>Money Spent By Each Customer : </h1>
+
   <h2>Select Minimum Sell Amount</h2>
   <form method="POST" action="/statistics">
     <select name="min_cust_sale">
@@ -21,11 +23,11 @@ table, th, td {
         <option value="1000">1000</option>
         <option value="1500">1500</option>
     </select>
-    <input type="submit" value="View Detail"></p>
+    <input type="submit" value="Apply Filter"></p>
   </form>
 
 
-  <h1>Money Spent By Each Customer : </h1>
+  
   <table>
     {% for column in money_spent_cols %}
       <th>{{column}}</th>
@@ -43,6 +45,25 @@ table, th, td {
   <p>
 
   <h1>SKU Sell Statistics: </h1>
+  <h2>Apply Sale Amount and Rating Filters</h2>
+  <form method="POST" action="/statistics">
+    <select name="min_total_sale">
+        <option value="0">All Sale Values ?</option>
+        <option value="100">100</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+        <option value="2000">2000</option>
+    </select>
+    <select name="min_average_rating">
+        <option value="0">All Rating Values ?</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select>
+    <input type="submit" value="Apply Filter"></p>
+  </form>
   <table>
     {% for column in sku_detail_cols %}
       <th>{{column}}</th>
@@ -61,6 +82,24 @@ table, th, td {
 
 
   <h1>Shipping Cost Statistics: </h1>
+  <h2>Apply Zip Code and Min Cost Filter</h2>
+  <form method="POST" action="/statistics">
+    <select name="zip_code_value">
+        <option value="0">All Zip Codes ?</option>
+        {% for row in shipping_cost_data %}
+        <option value="{{row[0]}}">{{row[0]}}</option>
+        {% endfor %}
+    </select>
+    <select name="min_shipping_cost">
+        <option value="0">All Sale Values ?</option>
+        <option value="1">1</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="7">7</option>
+        <option value="9">9</option>
+    </select>
+    <input type="submit" value="Apply Filter"></p>
+  </form>
   <table>
     {% for column in shipping_cost_cols %}
       <th>{{column}}</th>

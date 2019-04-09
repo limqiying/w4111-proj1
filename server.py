@@ -231,29 +231,99 @@ def statistics():
 
   money_spent_sql = """
     select * from (
+    select * from (
     select x.name, sum(cast(x.price as integer)) as total_spending from (
     select c.name,cs.price from customer as c, buys as b, "order" as o, consists_of as cs where cast(c.cid as text) = b.cid 
     and b.oid = o.oid and o.oid = cs.oid
     ) as x group by name
     ) as z order by z.total_spending desc
-    """
+    ) as q where q.total_spending > %s
+    """ % min_cust_sale
+
+  print money_spent_sql
 
   cursor = g.conn.execute(money_spent_sql)
   money_spent_cols = cursor.keys()
   money_spent_data = list(cursor)
   cursor.close()
 
+  min_total_sale = None
+  min_average_rating = None
 
-  sku_detail_sql = "select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (" + \
-    "select a.sku, sum(cast(a.price as integer)) as total_sale from (" + \
-    "select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku" + \
-    ") as a group by sku" + \
-    ") x ON w.sku = x.sku " + \
-    "LEFT JOIN (" + \
-    "select z.sku, avg(z.rating) as average_rating from (" + \
-    "select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku" + \
-    ") as z group by sku" + \
-    ") as y ON w.sku = y.sku order by w.sku asc"
+  if 'min_total_sale' in request.form:
+    min_total_sale = request.form['min_total_sale']
+    if min_total_sale == '0':
+      print "Setting None"
+      min_total_sale = None
+  if 'min_average_rating' in request.form:
+    min_average_rating = request.form['min_average_rating']
+    if min_average_rating == '0':
+      print "Setting None"
+      min_average_rating = None
+
+  if min_total_sale is None and min_average_rating is None:
+    sku_detail_sql = """
+      select * from (
+      select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (
+      select a.sku, sum(cast(a.price as integer)) as total_sale from (
+      select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku
+      ) as a group by sku
+      ) x ON w.sku = x.sku 
+      LEFT JOIN (
+      select z.sku, avg(z.rating) as average_rating from (
+      select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku
+      ) as z group by sku
+      ) as y ON w.sku = y.sku order by w.sku asc
+      ) as q
+    """
+  elif min_total_sale is None and min_average_rating is not None:
+    sku_detail_sql = """
+      select * from (
+      select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (
+      select a.sku, sum(cast(a.price as integer)) as total_sale from (
+      select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku
+      ) as a group by sku
+      ) x ON w.sku = x.sku 
+      LEFT JOIN (
+      select z.sku, avg(z.rating) as average_rating from (
+      select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku
+      ) as z group by sku
+      ) as y ON w.sku = y.sku order by w.sku asc
+      ) as q where q.average_rating >= %s
+    """ % (min_average_rating)
+
+  elif min_total_sale is not None and min_average_rating is None:
+    sku_detail_sql = """
+      select * from (
+      select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (
+      select a.sku, sum(cast(a.price as integer)) as total_sale from (
+      select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku
+      ) as a group by sku
+      ) x ON w.sku = x.sku 
+      LEFT JOIN (
+      select z.sku, avg(z.rating) as average_rating from (
+      select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku
+      ) as z group by sku
+      ) as y ON w.sku = y.sku order by w.sku asc
+      ) as q where q.total_sale >= %s
+    """ % (min_total_sale)
+
+  else:
+    # all proper given
+    sku_detail_sql = """
+      select * from (
+      select w.sku ,w.name, w.description, x.total_sale, y.average_rating from inventory as w LEFT JOIN (
+      select a.sku, sum(cast(a.price as integer)) as total_sale from (
+      select i.sku, cs.price from inventory as i, consists_of as cs where i.sku = cs.sku
+      ) as a group by sku
+      ) x ON w.sku = x.sku 
+      LEFT JOIN (
+      select z.sku, avg(z.rating) as average_rating from (
+      select i.sku, cast(r.rating as integer) as rating from inventory as i, review as r where i.sku = r.sku
+      ) as z group by sku
+      ) as y ON w.sku = y.sku order by w.sku asc
+      ) as q where q.total_sale >= %s and q.average_rating >= %s
+    """ % (min_total_sale, min_average_rating)
 
   cursor = g.conn.execute(sku_detail_sql)
   sku_detail_cols = cursor.keys()
@@ -261,12 +331,61 @@ def statistics():
   cursor.close()
 
 
-  shipping_cost_sql = "select * from (" + \
-    "select d.zip_code, avg(d.shipping_cost) as average_cost from (" + \
-    "select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, \"order\" as o, ships_via as sv, shipping_detail as sd " + \
-    "where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)" + \
-    ") as d group by zip_code" + \
-    ") as c order by average_cost desc"
+  if 'zip_code_value' in request.form:
+    zip_code_value = request.form['zip_code_value']
+    if zip_code_value == '0':
+      print "Setting None"
+      zip_code_value = None
+  if 'min_shipping_cost' in request.form:
+    min_shipping_cost = request.form['min_shipping_cost']
+    if min_shipping_cost == '0':
+      print "Setting None"
+      min_shipping_cost = None
+
+  if zip_code_value is None and min_shipping_cost is None:
+    shipping_cost_sql = """
+      select * from (
+      select * from (
+      select d.zip_code, avg(d.shipping_cost) as average_cost from (
+      select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, "order" as o, ships_via as sv, shipping_detail as sd 
+      where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)
+      ) as d group by zip_code
+      ) as c order by average_cost desc
+      ) as q
+    """
+  elif zip_code_value is not None and min_shipping_cost is None:
+    shipping_cost_sql = """
+      select * from (
+      select * from (
+      select d.zip_code, avg(d.shipping_cost) as average_cost from (
+      select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, "order" as o, ships_via as sv, shipping_detail as sd 
+      where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)
+      ) as d group by zip_code
+      ) as c order by average_cost desc
+      ) as q where q.zip_code = '%s'
+    """ % (zip_code_value)
+  elif zip_code_value is None and min_shipping_cost is not None:
+    shipping_cost_sql = """
+      select * from (
+      select * from (
+      select d.zip_code, avg(d.shipping_cost) as average_cost from (
+      select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, "order" as o, ships_via as sv, shipping_detail as sd 
+      where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)
+      ) as d group by zip_code
+      ) as c order by average_cost desc
+      ) as q where q.average_cost >= %s
+    """ % (min_shipping_cost)
+  else:
+    shipping_cost_sql = """
+      select * from (
+      select * from (
+      select d.zip_code, avg(d.shipping_cost) as average_cost from (
+      select ra.zip_code, cast(sd.shipping_cost as integer) from residential_address as ra, ships_to as st, "order" as o, ships_via as sv, shipping_detail as sd 
+      where cast(ra.aid as text) = cast(st.aid as text) and st.oid = o.oid and o.oid = sv.oid and cast(sv.shipid as text) = cast(sd.shipid as text)
+      ) as d group by zip_code
+      ) as c order by average_cost desc
+      ) as q where q.zip_code = '%s' and q.average_cost >= %s
+    """ % (zip_code_value, min_shipping_cost)
 
   cursor = g.conn.execute(shipping_cost_sql)
   shipping_cost_cols = cursor.keys()
